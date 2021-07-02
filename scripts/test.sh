@@ -1,0 +1,1 @@
+node tests/$1.global.js
