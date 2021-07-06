@@ -7,11 +7,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _chainlink = _interopRequireDefault(require("./chainlink"));
-
 var _errors = require("./errors");
 
-var _util = require("./util");
+var _chaincontainer = _interopRequireDefault(require("./chaincontainer"));
+
+var _element = _interopRequireDefault(require("./element"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -45,28 +45,21 @@ function _classExtractFieldDescriptor(receiver, privateMap, action) { if (!priva
 
 function _classApplyDescriptorGet(receiver, descriptor) { if (descriptor.get) { return descriptor.get.call(receiver); } return descriptor.value; }
 
-var _children = /*#__PURE__*/new WeakMap();
+var _dom = /*#__PURE__*/new WeakMap();
 
-var _with2 = /*#__PURE__*/new WeakMap();
+var ChainPanel = /*#__PURE__*/function (_ChainContainer) {
+  _inherits(ChainPanel, _ChainContainer);
 
-var ChainContainer = /*#__PURE__*/function (_ChainLink) {
-  _inherits(ChainContainer, _ChainLink);
+  var _super = _createSuper(ChainPanel);
 
-  var _super = _createSuper(ChainContainer);
-
-  function ChainContainer() {
+  function ChainPanel() {
     var _this;
 
-    _classCallCheck(this, ChainContainer);
+    _classCallCheck(this, ChainPanel);
 
     _this = _super.call(this);
 
-    _children.set(_assertThisInitialized(_this), {
-      writable: true,
-      value: []
-    });
-
-    _with2.set(_assertThisInitialized(_this), {
+    _dom.set(_assertThisInitialized(_this), {
       writable: true,
       value: null
     });
@@ -74,76 +67,51 @@ var ChainContainer = /*#__PURE__*/function (_ChainLink) {
     return _this;
   }
 
-  _createClass(ChainContainer, [{
-    key: "with",
-    value: function _with(fn) {
-      if (fn instanceof Function) {
-        if (_classPrivateFieldGet(this, _with2) !== null) {
-          fn(_classPrivateFieldGet(this, _with2));
-          return this;
-        } else {
-          throw new _errors.ChainError("No context to call with() on!");
-        }
-      } else if (!fn) {
-        var _with = _classPrivateFieldGet(this, _with2);
-
-        _classPrivateFieldSet(this, _with2, null);
-
-        return _with;
-      } else {
-        throw new TypeError("fn must be a function!");
+  _createClass(ChainPanel, [{
+    key: "render",
+    value: function render() {
+      if (_classPrivateFieldGet(this, _dom) === null) {
+        _classPrivateFieldSet(this, _dom, _element["default"].create('div'));
       }
+
+      return _classPrivateFieldGet(this, _dom);
     }
   }, {
-    key: "add",
-    value: function add(child) {
-      if (child instanceof _chainlink["default"]) {
-        _classPrivateFieldGet(this, _children).push(child);
+    key: "unrender",
+    value: function unrender() {
+      _classPrivateFieldGet(this, _dom).remove();
 
-        _classPrivateFieldSet(this, _with2, child);
-
-        this.mount(child);
-        return this;
-      } else {
-        throw new TypeError("type of child must be a subclass of ChainLink!");
-      }
+      _classPrivateFieldSet(this, _dom, null);
     }
-  }, {
-    key: "remove",
-    value: function remove(child) {
-      var idx = _classPrivateFieldGet(this, _children).includes(child);
-
-      if (idx >= 0) {
-        _classPrivateFieldGet(this, _children).splice(idx, 1);
-
-        _classPrivateFieldSet(this, _with2, null);
-
-        this.dismount(child);
-        return this;
-      } else {
-        throw new _errors.ChainError("No such child '".concat(child, "'"));
-      }
-    }
-  }, {
-    key: "$children",
-    get: function get() {
-      return (0, _util.copy_array)(_classPrivateFieldGet(this, _children));
-    } // -- Abstract Methods --
-
   }, {
     key: "mount",
     value: function mount(child) {
-      throw new _errors.NotImplementedError();
+      if (_classPrivateFieldGet(this, _dom) === null) {
+        throw new _errors.ChainError("Cannot mount to a panel that has not been rendered!");
+      } else {
+        var dom_element = child.render();
+
+        _classPrivateFieldGet(this, _dom).appendChild(dom_element);
+
+        child.mounted();
+        this.updated(); // No-op?
+      }
     }
   }, {
     key: "dismount",
     value: function dismount(child) {
-      throw new _errors.NotImplementedError();
+      if (_classPrivateFieldGet(this, _dom) === null) {
+        throw new _errors.ChainError("Cannot dismount from a panel that has not been rendered!");
+      } else {
+        child.unrender();
+        child.dismounted();
+        this.updated(); // No-op?
+      }
     }
   }]);
 
-  return ChainContainer;
-}(_chainlink["default"]);
+  return ChainPanel;
+}(_chaincontainer["default"]);
 
-var _default = ChainContainer;
+var _default = ChainPanel;
 exports["default"] = _default;
